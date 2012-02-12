@@ -1,0 +1,19 @@
+Microsoft Visual Studio Solution File, Format Version 10.00
+# Visual C++ Express 2008
+Project("{A9026E83-0284-7B3A-60C4-D6CC3D5DAD65}") = "automello Plugin", "automello Plugin.vcproj", "{C11BAE68-368A-3E79-F5B3-A82ED7AC6900}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Win32 = Debug|Win32
+		Release|Win32 = Release|Win32
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{C11BAE68-368A-3E79-F5B3-A82ED7AC6900}.Debug|Win32.ActiveCfg = Debug|Win32
+		{C11BAE68-368A-3E79-F5B3-A82ED7AC6900}.Debug|Win32.Build.0 = Debug|Win32
+		{C11BAE68-368A-3E79-F5B3-A82ED7AC6900}.Release|Win32.ActiveCfg = Release|Win32
+		{C11BAE68-368A-3E79-F5B3-A82ED7AC6900}.Release|Win32.Build.0 = Release|Win32
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+EndGlobal
