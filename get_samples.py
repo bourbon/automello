@@ -35,7 +35,7 @@ def split_into_segments(audio_file, destination_dir, selection_filter=None, num_
 		sample = audio.getpieces(audio_file, [segment])
 		
 		# Normalize it
-		sample.data = np.int16(sample.data / float(max(abs(sample.data))) * np.iinfo(np.int16).max)
+		sample.data = np.int16(sample.data / float(np.max(np.abs(sample.data))) * np.iinfo(np.int16).max)
 		
 		# Write it out to disk as wav
 		sample.encode(path, mp3=False)
