@@ -80,7 +80,7 @@ if __name__ == '__main__':
 		paths = []
 		for root, dirs, files in os.walk(path): 
 			paths.extend([os.path.join(root, f) for f in files])
-		paths = [x for x in paths if x[-3:].lower() in VALID_FILETYPES]
+		paths = [x for x in paths if x[-3:] in VALID_FILETYPES]
 	else:
 		raise OSError("Couldn't find anything at path %s" % (path))
 		
@@ -118,16 +118,17 @@ if __name__ == '__main__':
 	for path in paths:
 		try:
 			segments = split_into_segments(path=path, selection_filter=my_filter, num_segments=num_segments)
+			
+			# Write candidate samples to disk if we're not in beats mode
+			if not beats_mode:
+				write_segments_to_disk(segments, candidate_destination_dir, output_prefix=os.path.split(path[:-4])[1])
 		except Exception, e:
 			print "ERROR: Couldn't get candidate samples for %s: %s" % (path, str(e))
 	
 	if beats_mode:
-		# def beats_sorter(segments, destination_dir):
+		# beats_sorter(training_dir, segments, destination_dir)
 		raise NotImplementedError
 	else:
-		# Write candidate samples to disk
-		write_segments_to_disk(segments, candidate_destination_dir, output_prefix=os.path.split(path[:-4])[1])
-		
 		# Find the best samples per note out of the candidates
 		MonophonicTonalitySorter(candidate_destination_dir, destination_dir)
 	
