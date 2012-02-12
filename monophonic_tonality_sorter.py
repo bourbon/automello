@@ -9,6 +9,9 @@ import os
 import shutil
 import numpy as np
 
+PITCH_TOLERANCE=.05
+PITCHES_TO_RUN=6
+
 class MonophonicTonalitySorter:
   def __init__( self, snippetDirectory, destinationDirectory, fs = 44100, nNotes = 72, baseNote = 24 ):
     # Store input params
@@ -52,12 +55,12 @@ class MonophonicTonalitySorter:
       # What's the detected Hz of the note?
       detectedHz = 1.0
       # Until we find an audio file whose YIN detected pitch is sufficiently close
-      while ((targetHz/detectedHz) < .95 or (targetHz/detectedHz) > 1.05) and sortedIndex < tonalitiesSort.shape[0] and sortedIndex < 6:
+      while ((targetHz/detectedHz) < (1 - PITCH_TOLERANCE) or (targetHz/detectedHz) > (1 + PITCH_TOLERANCE)) and sortedIndex < tonalitiesSort.shape[0] and sortedIndex < PITCHES_TO_RUN:
         # If this file has not been YIN analyzed yet, analyze it
         if not fileFrequencies.has_key( tonalitiesSort[sortedIndex] ):        
           audioData, fs = utility.getWavData( fileList[tonalitiesSort[sortedIndex]] )
           # ... and store it so that you don't have to calculate it next time
-          fileFrequencies[tonalitiesSort[sortedIndex]] = self.yinPitchDetect( audioData[:audioData.shape[0]/2] )
+          fileFrequencies[tonalitiesSort[sortedIndex]] = self.yinPitchDetect( audioData )
         detectedHz = fileFrequencies[tonalitiesSort[sortedIndex]]
         # Check the next file next time
         sortedIndex += 1
