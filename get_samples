@@ -13,12 +13,14 @@ from echonest.selection import fall_on_the
 import numpy as np
 
 from monophonic_tonality_sorter import MonophonicTonalitySorter
+# from beats_sorter import beats_sorter
 
 VALID_FILETYPES = ['mp3', 'wav', 'm4a']		 # which filetypes we care about when finding audio in a directory
+OUTPUT_SAMPLE_RATE = 44100                   # default sample rate on output sample files
 SAMPLES_PER_FILE = 50				 		 # default number of samples to get per file
 MINIMUM_SAMPLE_LENGTH = 0.18				 # minimum length of a sample
 
-def split_into_segments(path, destination_dir, selection_filter=None, num_segments=None, output_prefix=""):	
+def split_into_segments(path, selection_filter=None, num_segments=None):	
 	if not selection_filter:
 		selection_filter = lambda l, n: l[:n]
 	if not num_segments:
@@ -38,26 +40,37 @@ def split_into_segments(path, destination_dir, selection_filter=None, num_segmen
 	# Grab all the segments and filter them with the given selection_filter
 	segments = selection_filter(segments, num_segments)
 	
+	return segments
+	
+	
+def write_segments_to_disk(segments, destination_dir, output_prefix=""):
 	for index, segment in enumerate(segments):
 		path = os.path.join(destination_dir, "%s%s.wav" % (output_prefix, str(index)))
 		print "Writing out candidate sample: %s" % path
 		
 		# Get AudioData object for segment
-		sample = audio.getpieces(audio_file, [segment])
+		sample = segment.render()
 		
 		# Normalize it
 		sample.data = np.int16(sample.data / float(np.max(np.abs(sample.data))) * np.iinfo(np.int16).max)
     
-		sample.sampleRate = 44100
-		
 		# Write it out to disk as wav
+		sample.sampleRate = OUTPUT_SAMPLE_RATE
 		sample.encode(path, mp3=False)
 
 	
 if __name__ == '__main__':
 	if len(sys.argv) < 2:
-		print "usage: %s SOURCE_PATH [DEST_DIR] [SAMPLES_PER_FILE]" % sys.argv[0]
+		print "usage: %s [--beats] SOURCE_PATH [DEST_DIR] [SAMPLES_PER_FILE]" % sys.argv[0]
 		sys.exit(0)
+	
+	# Beats mode?
+	if sys.argv[1] == '--beats':
+		beats_mode = True
+		del sys.argv[1]
+		print "Running in beats mode"
+	else:
+		beats_mode = False
 	
 	# Figure out which files to analyze
 	path = sys.argv[1]
@@ -87,22 +100,36 @@ if __name__ == '__main__':
 	else:
 		num_segments = int(sys.argv[3])
 	
-	# A bunch of different filters
+	# A bunch of different filters for the candidate samples
 	random_filter = lambda l, n: random.sample(l, n)
 	longest_filter = lambda l, n: l.ordered_by(sorting.duration, descending=True)[:n]
 	least_noisy_filter = lambda l, n: l.ordered_by(sorting.noisiness)[:n] # noisiness = sum of twelve pitch vectors elements
+	most_noisy_filter = lambda l, n: l.ordered_by(sorting.noisiness, descending=True)[:n]
 	random_selection_of_least_noisy_filter = lambda l, n: random.sample(l.ordered_by(sorting.noisiness)[:int(0.2 * len(l))], n)
 	least_confidence_filter = lambda l, n: l.ordered_by(sorting.confidence)[:n]
+
+	# Select the candidate sample filter based on which mode we're in
+	if beats_mode:
+		my_filter = most_noisy_filter
+	else:
+		my_filter = least_noisy_filter
 	
 	# Get candidate samples
 	for path in paths:
 		try:
-			split_into_segments(path=path, destination_dir=candidate_destination_dir, selection_filter=least_noisy_filter, output_prefix=os.path.split(path[:-4])[1], num_segments=num_segments)
+			segments = split_into_segments(path=path, selection_filter=my_filter, num_segments=num_segments)
 		except Exception, e:
 			print "ERROR: Couldn't get candidate samples for %s: %s" % (path, str(e))
 	
-	# Find the best samples per note out of the candidates
-	MonophonicTonalitySorter(candidate_destination_dir, destination_dir)
+	if beats_mode:
+		# def beats_sorter(segments, destination_dir):
+		raise NotImplementedError
+	else:
+		# Write candidate samples to disk
+		write_segments_to_disk(segments, candidate_destination_dir, output_prefix=os.path.split(path[:-4])[1])
+		
+		# Find the best samples per note out of the candidates
+		MonophonicTonalitySorter(candidate_destination_dir, destination_dir)
 	
 	# Clean up
 	shutil.rmtree(candidate_destination_dir)
