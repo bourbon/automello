@@ -39,6 +39,7 @@ class MonophonicTonalitySorter:
     # Hash for the fundamental frequencies of each file
     fileFrequencies = {}
     # Find the best file for each note
+    print "Finding best candidates for notes"
     for n in np.arange( self.nNotes ):
       # Get the tonality scores
       tonalitiesForThisNote = tonalities[:,n]
