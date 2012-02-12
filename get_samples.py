@@ -47,6 +47,8 @@ def split_into_segments(path, destination_dir, selection_filter=None, num_segmen
 		
 		# Normalize it
 		sample.data = np.int16(sample.data / float(np.max(np.abs(sample.data))) * np.iinfo(np.int16).max)
+    
+		sample.sampleRate = 44100
 		
 		# Write it out to disk as wav
 		sample.encode(path, mp3=False)
