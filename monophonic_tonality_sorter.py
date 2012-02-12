@@ -9,7 +9,7 @@ import os
 import shutil
 import numpy as np
 
-class fileSorter:
+class MonophonicTonalitySorter:
   def __init__( self, snippetDirectory, destinationDirectory, fs = 44100, nNotes = 72, baseNote = 24 ):
     # Store input params
     self.snippetDirectory = snippetDirectory
@@ -146,4 +146,4 @@ if __name__ == "__main__":
   if len(sys.argv) < 2:
     print "Usage: %s snippetDirectory outputDirectory" % sys.argv[0]
     sys.exit(-1)
-  fileSorter( sys.argv[1], sys.argv[2] )
+  MonophonicTonalitySorter( sys.argv[1], sys.argv[2] )
