@@ -65,7 +65,6 @@ void AutomelloPluginAudioProcessorEditor::comboBoxChanged( ComboBox *comboBoxTha
 {
   if ( comboBoxThatHasChanged == &directoryDropDown )
   {
-    std::cout << datasetDirectory.getFullPathName() + directoryDropDown.getText() << std::endl;
     getProcessor()->setDirectory( File( datasetDirectory.getFullPathName() + File::separator + directoryDropDown.getText() ) );
   }
 }
