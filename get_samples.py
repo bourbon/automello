@@ -1,5 +1,10 @@
 #!/usr/bin/python
 
+"""
+	get_samples.py -- Extracts samples from a given path to an audio file or directory of audio files
+	                  and writes them to a destination directory.
+"""
+
 import sys, os, random
 
 import echonest.audio as audio
@@ -40,7 +45,7 @@ if __name__ == '__main__':
 		paths = []
 		for root, dirs, files in os.walk(path): 
 			paths.extend([os.path.join(root, f) for f in files])
-		paths = [x for x in paths if x[-3:] in VALID_FILETYPES]
+		paths = [x for x in paths if x[-3:].lower() in VALID_FILETYPES]
 	else:
 		raise OSError("Couldn't find anything at path %s" % (path))
 		

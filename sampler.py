@@ -1,0 +1,82 @@
+#!/usr/bin/python
+
+"""
+	sampler.py -- Creates a sampler out of the audio files in a given directory. You can optionally name
+	              the files according to the MIDI value you want them triggered by (i.e. [0-128].wav).
+	
+	based on http://code.google.com/p/zyne/wiki/SimpleSampler
+"""
+
+import os, sys
+
+from pyo import *
+
+VALID_FILETYPES = ['wav', 'aif'] 		# which kinds of audio files we can use as samples
+
+def sampler_from_directory(path, use_filename_for_midi_value=False):
+	s = Server()
+	# pm_list_devices()
+	# s.setMidiInputDevice(0)
+	s.boot()
+	
+	audio_files = sorted([f for f in os.listdir(path) if f[-3:].lower() in VALID_FILETYPES])
+	print "Loading samples in %s..." % (path)
+
+	objs = []
+	for index, audio_file in enumerate(audio_files[:128]):	# limit to 128 files
+		# Load the current audio file into a sound table
+		sound_table = SndTable(os.path.join(path, audio_file))
+	
+		# Determine the  MIDI value; uses the filename if use_filename_for_midi_value is set (default) or
+		# just uses the current index (thus loading the files in order corresponding to the keys)
+		if use_filename_for_midi_value:
+			midi_value = int(audio_file[:-4])
+		else:
+			midi_value = index
+		note = Notein(poly=1, scale=0, first=midi_value, last=midi_value, channel=0)
+	
+		# Set up envelope triggers for L + R output channels
+		left  = TrigEnv(Thresh(note["velocity"]), sound_table, sound_table.getDur(), mul=Port(note["velocity"],.001,1)).out(0)
+		right = TrigEnv(Thresh(note["velocity"]), sound_table, sound_table.getDur(), mul=Port(note["velocity"],.001,1)).out(1)
+	
+		# Make 
+		objs.extend([sound_table, note, left, right])
+	
+	# s.gui(locals())
+	s.start()
+	print "Server started, press ^C^C to stop."
+
+	# Keep on keepin' on
+	try:
+		while(1):
+			pass
+	except KeyboardInterrupt:
+		pass
+	
+	
+if __name__ == '__main__':
+	if len(sys.argv) < 2 or not os.path.exists(sys.argv[1]):
+		print "usage: python sampler.py [path to directory of samples]"
+		sys.exit()
+	else:
+		path = sys.argv[1]
+
+	# Determine if we should use filenames as MIDI values
+	use_filename_for_midi_value = True
+	for f in os.listdir(path):
+		try:
+			if int(f[:-4]) in range(128):
+				pass
+			else:
+				use_filename_for_midi_value = False
+				break
+		except ValueError:
+			use_filename_for_midi_value = False
+			break
+	if use_filename_for_midi_value:
+		print "Will use filenames as MIDI values."
+	else:
+		print "Will map filenames to MIDI values in order."
+
+	# Start it!
+	sampler_from_directory(path, use_filename_for_midi_value=use_filename_for_midi_value)
