@@ -16,7 +16,7 @@ from monophonic_tonality_sorter import MonophonicTonalitySorter
 
 VALID_FILETYPES = ['mp3', 'wav', 'm4a']		 # which filetypes we care about when finding audio in a directory
 SAMPLES_PER_FILE = 50				 		 # default number of samples to get per file
-MINIMUM_SAMPLE_LENGTH = 0.35				 # minimum length of a sample
+MINIMUM_SAMPLE_LENGTH = 0.18				 # minimum length of a sample
 
 def split_into_segments(path, destination_dir, selection_filter=None, num_segments=None, output_prefix=""):	
 	if not selection_filter:
@@ -94,7 +94,10 @@ if __name__ == '__main__':
 	
 	# Get candidate samples
 	for path in paths:
-		split_into_segments(path=path, destination_dir=candidate_destination_dir, selection_filter=least_noisy_filter, output_prefix=os.path.split(path[:-4])[1], num_segments=num_segments)
+		try:
+			split_into_segments(path=path, destination_dir=candidate_destination_dir, selection_filter=least_noisy_filter, output_prefix=os.path.split(path[:-4])[1], num_segments=num_segments)
+		except Exception, e:
+			print "ERROR: Couldn't get candidate samples for %s: %s" % (path, str(e))
 	
 	# Find the best samples per note out of the candidates
 	MonophonicTonalitySorter(candidate_destination_dir, destination_dir)
