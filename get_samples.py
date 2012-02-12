@@ -10,6 +10,7 @@ import sys, os, random
 import echonest.audio as audio
 import echonest.sorting as sorting
 from echonest.selection import fall_on_the
+import numpy as np
 
 VALID_FILETYPES = ['mp3', 'wav', 'm4a']		 # which filetypes we care about when finding audio in a directory
 NUM_SEGMENTS = 10				 			 # default number of segments to get per file
@@ -29,7 +30,15 @@ def split_into_segments(audio_file, destination_dir, selection_filter=None, num_
 	for index, segment in enumerate(segments):
 		path = os.path.join(destination_dir, "%s%s.wav" % (output_prefix, str(index)))
 		print "Writing out sample: %s" % path
-		audio.getpieces(audio_file, [segment]).encode(path, mp3=False)
+		
+		# Get AudioData object for segment
+		sample = audio.getpieces(audio_file, [segment])
+		
+		# Normalize it
+		sample.data = np.int16(sample.data / float(max(abs(sample.data))) * np.iinfo(np.int16).max)
+		
+		# Write it out to disk as wav
+		sample.encode(path, mp3=False)
 
 	
 if __name__ == '__main__':
