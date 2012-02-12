@@ -1,8 +1,8 @@
 #!/usr/bin/python
 
 """
-	get_samples.py -- Extracts samples from a given path to an audio file or directory of audio files
-	                  and writes them to a destination directory.
+	get_samples.py -- Automatically extracts samples from a given path to an audio file or directory of audio files
+	                  for each MIDI note (within a reasonable range) and writes them to a destination directory.
 """
 
 import sys, os, random, tempfile, shutil
@@ -15,7 +15,7 @@ import numpy as np
 from monophonic_tonality_sorter import MonophonicTonalitySorter
 
 VALID_FILETYPES = ['mp3', 'wav', 'm4a']		 # which filetypes we care about when finding audio in a directory
-SAMPLES_PER_FILE = 10				 		 # default number of samples to get per file
+SAMPLES_PER_FILE = 50				 		 # default number of samples to get per file
 MINIMUM_SAMPLE_LENGTH = 0.15				 # minimum length of a sample
 
 def split_into_segments(path, destination_dir, selection_filter=None, num_segments=None, output_prefix=""):	
@@ -101,3 +101,5 @@ if __name__ == '__main__':
 	
 	# Clean up
 	shutil.rmtree(candidate_destination_dir)
+	
+	print "\nSamples written to %s" % (destination_dir)
