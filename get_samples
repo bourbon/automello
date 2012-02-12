@@ -56,7 +56,7 @@ def split_into_segments(path, destination_dir, selection_filter=None, num_segmen
 	
 if __name__ == '__main__':
 	if len(sys.argv) < 2:
-		print "usage: python get_samples.py SOURCE_PATH DEST_DIR [SAMPLES_PER_FILE]"
+		print "usage: %s SOURCE_PATH [DEST_DIR] [SAMPLES_PER_FILE]" % sys.argv[0]
 		sys.exit(0)
 	
 	# Figure out which files to analyze

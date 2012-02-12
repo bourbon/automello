@@ -56,7 +56,7 @@ def sampler_from_directory(path, use_filename_for_midi_value=False):
 	
 if __name__ == '__main__':
 	if len(sys.argv) < 2 or not os.path.exists(sys.argv[1]):
-		print "usage: python sampler.py [path to directory of samples]"
+		print "usage: %s [path to directory of samples]" % sys.argv[0]
 		sys.exit()
 	else:
 		path = sys.argv[1]
