@@ -1,30 +1,35 @@
 #!/usr/bin/python
 
 """
-	get_samples.py -- Extracts samples from a given path to an audio file or directory of audio files
-	                  and writes them to a destination directory.
+	get_samples.py -- Automatically extracts samples from a given path to an audio file or directory of audio files
+	                  for each MIDI note (within a reasonable range) and writes them to a destination directory.
 """
 
-import sys, os, random
+import sys, os, random, tempfile, shutil
 
 import echonest.audio as audio
 import echonest.sorting as sorting
 from echonest.selection import fall_on_the
 import numpy as np
 
+from monophonic_tonality_sorter import MonophonicTonalitySorter
+
 VALID_FILETYPES = ['mp3', 'wav', 'm4a']		 # which filetypes we care about when finding audio in a directory
-SAMPLES_PER_FILE = 10				 		 # default number of samples to get per file
+SAMPLES_PER_FILE = 50				 		 # default number of samples to get per file
 MINIMUM_SAMPLE_LENGTH = 0.35				 # minimum length of a sample
 
-def get_audio_file(path):
-	return audio.LocalAudioFile(path)
-
-def split_into_segments(audio_file, destination_dir, selection_filter=None, num_segments=None, output_prefix=""):	
+def split_into_segments(path, destination_dir, selection_filter=None, num_segments=None, output_prefix=""):	
 	if not selection_filter:
 		selection_filter = lambda l, n: l[:n]
 	if not num_segments:
 		num_segments = SAMPLES_PER_FILE
 	
+	print "Getting candidate samples from %s" % path
+	
+	# Load audio file & get Echo Nest anlysis
+	audio_file = audio.LocalAudioFile(path)
+
+	# Get the segments from the Echo Nest analysis
 	segments = audio_file.analysis.segments
 	
 	# Filter out all segments less than MINIMUM_SAMPLE_LENGTH
@@ -35,7 +40,7 @@ def split_into_segments(audio_file, destination_dir, selection_filter=None, num_
 	
 	for index, segment in enumerate(segments):
 		path = os.path.join(destination_dir, "%s%s.wav" % (output_prefix, str(index)))
-		print "Writing out sample: %s" % path
+		print "Writing out candidate sample: %s" % path
 		
 		# Get AudioData object for segment
 		sample = audio.getpieces(audio_file, [segment])
@@ -71,7 +76,9 @@ if __name__ == '__main__':
 		destination_dir = sys.argv[2]
 	if not os.path.exists(destination_dir):
 		os.makedirs(destination_dir)
-	print destination_dir
+	
+	# Get the destination directory for candidates
+	candidate_destination_dir = tempfile.mkdtemp()
 	
 	if len(sys.argv) < 4:
 		num_segments = SAMPLES_PER_FILE
@@ -85,8 +92,14 @@ if __name__ == '__main__':
 	random_selection_of_least_noisy_filter = lambda l, n: random.sample(l.ordered_by(sorting.noisiness)[:int(0.2 * len(l))], n)
 	least_confidence_filter = lambda l, n: l.ordered_by(sorting.confidence)[:n]
 	
-	# Do it!
+	# Get candidate samples
 	for path in paths:
-		print "Working on %s" % path
-		split_into_segments(audio_file=get_audio_file(path), destination_dir=destination_dir, selection_filter=least_noisy_filter, output_prefix=os.path.split(path[:-4])[1], num_segments=num_segments)
+		split_into_segments(path=path, destination_dir=candidate_destination_dir, selection_filter=least_noisy_filter, output_prefix=os.path.split(path[:-4])[1], num_segments=num_segments)
 	
+	# Find the best samples per note out of the candidates
+	MonophonicTonalitySorter(candidate_destination_dir, destination_dir)
+	
+	# Clean up
+	shutil.rmtree(candidate_destination_dir)
+	
+	print "\nSamples written to %s" % (destination_dir)
