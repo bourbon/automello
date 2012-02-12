@@ -13,7 +13,8 @@ from echonest.selection import fall_on_the
 import numpy as np
 
 VALID_FILETYPES = ['mp3', 'wav', 'm4a']		 # which filetypes we care about when finding audio in a directory
-NUM_SEGMENTS = 10				 			 # default number of segments to get per file
+SAMPLES_PER_FILE = 10				 		 # default number of samples to get per file
+MINIMUM_SAMPLE_LENGTH = 0.15				 # minimum length of a sample
 
 def get_audio_file(path):
 	return audio.LocalAudioFile(path)
@@ -22,10 +23,15 @@ def split_into_segments(audio_file, destination_dir, selection_filter=None, num_
 	if not selection_filter:
 		selection_filter = lambda l, n: l[:n]
 	if not num_segments:
-		num_segments = NUM_SEGMENTS
+		num_segments = SAMPLES_PER_FILE
+	
+	segments = audio_file.analysis.segments
+	
+	# Filter out all segments less than MINIMUM_SAMPLE_LENGTH
+	segments = segments.that(lambda x: x.duration > MINIMUM_SAMPLE_LENGTH)
 	
 	# Grab all the segments and filter them with the given selection_filter
-	segments = selection_filter(audio_file.analysis.segments, num_segments)
+	segments = selection_filter(segments, num_segments)
 	
 	for index, segment in enumerate(segments):
 		path = os.path.join(destination_dir, "%s%s.wav" % (output_prefix, str(index)))
@@ -68,7 +74,7 @@ if __name__ == '__main__':
 	print destination_dir
 	
 	if len(sys.argv) < 4:
-		num_segments = NUM_SEGMENTS
+		num_segments = SAMPLES_PER_FILE
 	else:
 		num_segments = int(sys.argv[3])
 	
