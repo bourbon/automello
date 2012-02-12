@@ -33,12 +33,15 @@ public:
 private:
   ComboBox directoryDropDown;
   File datasetDirectory;
+  // Binary resources:
+  static const char* logo320_png;
+  static const int logo320_pngSize;
+  Image logo;
   
   AutomelloPluginAudioProcessor* getProcessor() const
   {
     return static_cast <AutomelloPluginAudioProcessor*> (getAudioProcessor());
   }
 };
-
 
 #endif  // __PLUGINEDITOR_H_14C50693__

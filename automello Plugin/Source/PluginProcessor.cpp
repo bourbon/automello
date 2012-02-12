@@ -15,7 +15,7 @@
 //==============================================================================
 AutomelloPluginAudioProcessor::AutomelloPluginAudioProcessor()
 {
-  nVoices = 6;
+  nVoices = 10;
   // Initialise the synth...
   for (int i = nVoices; --i >= 0;)
     synth.addVoice( new SamplerVoice() );
