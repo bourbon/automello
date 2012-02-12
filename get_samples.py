@@ -14,7 +14,7 @@ import numpy as np
 
 VALID_FILETYPES = ['mp3', 'wav', 'm4a']		 # which filetypes we care about when finding audio in a directory
 SAMPLES_PER_FILE = 10				 		 # default number of samples to get per file
-MINIMUM_SAMPLE_LENGTH = 0.15				 # minimum length of a sample
+MINIMUM_SAMPLE_LENGTH = 0.35				 # minimum length of a sample
 
 def get_audio_file(path):
 	return audio.LocalAudioFile(path)

@@ -52,12 +52,12 @@ class MonophonicTonalitySorter:
       # What's the detected Hz of the note?
       detectedHz = 1.0
       # Until we find an audio file whose YIN detected pitch is sufficiently close
-      while ((targetHz/detectedHz) < .95 or (targetHz/detectedHz) > 1.05) and sortedIndex < tonalitiesSort.shape[0] and sortedIndex < 10:
+      while ((targetHz/detectedHz) < .95 or (targetHz/detectedHz) > 1.05) and sortedIndex < tonalitiesSort.shape[0] and sortedIndex < 6:
         # If this file has not been YIN analyzed yet, analyze it
         if not fileFrequencies.has_key( tonalitiesSort[sortedIndex] ):        
           audioData, fs = utility.getWavData( fileList[tonalitiesSort[sortedIndex]] )
           # ... and store it so that you don't have to calculate it next time
-          fileFrequencies[tonalitiesSort[sortedIndex]] = self.yinPitchDetect( audioData  )
+          fileFrequencies[tonalitiesSort[sortedIndex]] = self.yinPitchDetect( audioData[:audioData.shape[0]/2] )
         detectedHz = fileFrequencies[tonalitiesSort[sortedIndex]]
         # Check the next file next time
         sortedIndex += 1
@@ -134,7 +134,7 @@ class MonophonicTonalitySorter:
         break
     # No local minima found below threshold
     if not f0:
-      f0 = np.argmin( squaredDifferenceNormalized )
+      f0 = np.argmin( squaredDifferenceNormalized[1:-1] )
     # Parabolic interpolation
     peakOffset = (squaredDifferenceNormalized[f0+1] - squaredDifferenceNormalized[f0-1])\
       /(2.0*(2.0*squaredDifferenceNormalized[f0] - squaredDifferenceNormalized[f0+1] - squaredDifferenceNormalized[f0-1]))
